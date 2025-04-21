@@ -297,33 +297,6 @@
                         submitBtn.disabled = false; // ボタンを再度有効化
                     });
                 });
-
-                // 位置情報自動取得の実装例 (コメントアウト)
-                if (getLocationBtn) {
-                     getLocationBtn.addEventListener('click', function() {
-                         if (!liff.isInClient()) { // LINEアプリ内かどうか
-                             alert('この機能はLINEアプリ内で使用してください。');
-                             return;
-                         }
-                         liff.getLocation()
-                             .then((location) => {
-                                 console.log('Location obtained:', location);
-                                 document.getElementById('latitude').value = location.latitude;
-                                 document.getElementById('longitude').value = location.longitude;
-                                 document.getElementById('locationStatus').textContent = `現在地を取得しました (緯度: ${location.latitude.toFixed(4)}, 経度: ${location.longitude.toFixed(4)})`;
-                                 // 手入力フィールドをクリアまたは無効化するなど
-                                 document.getElementById('location').value = `緯度:${location.latitude}, 経度:${location.longitude}`; // 例として手入力フィールドに入れる
-                             })
-                             .catch((err) => {
-                                 console.error('Error getting location:', err);
-                                 document.getElementById('locationStatus').textContent = '現在地の取得に失敗しました。手入力してください。';
-                                 // エラーに応じた処理（例: 位置情報パーミッションが拒否された場合）
-                                 if (err.code === 5) { // PERMISSION_DENIED
-                                     alert('位置情報サービスへのアクセスが許可されていません。端末の設定を確認してください。');
-                                 }
-                             });
-                     });
-                 }
             })
             .catch((err) => {
                 // LIFF初期化失敗
