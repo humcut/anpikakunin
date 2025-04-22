@@ -1,4 +1,8 @@
 // index.js ファイル
+import liff from "@line/liff";
+import LIFFInspectorPlugin from "@line/liff-inspector";
+liff.use(new LIFFInspectorPlugin())
+await liff.init({liffId})
 
 // ☆☆☆ ここを設定してください ☆☆☆
 const LIFF_ID = '2007298177-JYelpW3d'; // LINE Developers Consoleで発行されたLIFF ID
