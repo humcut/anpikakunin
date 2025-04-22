@@ -1,8 +1,8 @@
 // script.js
 // LIFF IDはあなたのLIFF IDに置き換えてください
-const MY_LIFF_ID = 'YOUR_LIFF_ID';
+const MY_LIFF_ID = '2007298177-JYelpW3d';
 // GAS Web App URLはデプロイしたGASのURLに置き換えてください
-const GAS_WEB_APP_URL = 'YOUR_GAS_WEB_APP_URL';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwi1GiCjL55Cjh0M61prjFEfu9_6vP4Xi_AcTTYtWCddS6FIzieBRLuYCaqtyCVleHlMA/exec';
 
 let lineId = null;
 let userDisplayName = '';
