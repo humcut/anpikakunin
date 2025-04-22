@@ -156,3 +156,71 @@
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>安否確認</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/sdk/2.2.0/liff.js"></script>
+</head>
+<body>
+    <h1>安否確認フォーム</h1>
+    <form id="safetyForm">
+        <div>
+            <label for="name">氏名:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="selfSafety">本人の安否:</label>
+            <select id="selfSafety" name="selfSafety" required>
+                <option value="">選択してください</option>
+                <option value="無事">無事</option>
+                <option value="軽傷">軽傷</option>
+                <option value="重傷">重傷</option>
+                <option value="要救助">要救助</option>
+                <option value="不明">不明</option>
+            </select>
+        </div>
+        <div>
+            <label for="familySafety">家族の安否:</label>
+            <select id="familySafety" name="familySafety" required>
+                <option value="">選択してください</option>
+                <option value="無事">無事</option>
+                <option value="安否不明">安否不明</option>
+                <option value="一緒に避難">一緒に避難</option>                
+                <option value="別行動">別行動</option>
+                <option value="その他">その他</option>
+            </select>
+        </div>
+        <div>
+            <label for="currentLocation">現在の場所:</label>
+            <input type="text" id="currentLocation" name="currentLocation" placeholder="例: 自宅、会社、〇〇小学校、〇〇市△△" required >
+        </div>
+        <div>
+            <label for="commutePossibility">出社の可否:</label>
+            <select id="commutePossibility" name="commutePossibility">
+                <option value="">選択してください</option>
+                <option value="可能">可能</option>
+                <option value="自宅待機">自宅待機</option>
+                <option value="困難">困難</option>
+                <option value="その他">その他</option>
+            </select>
+        </div>
+        <div>
+            <label for="homeStatus">自宅の状況:</label>
+            <textarea id="homeStatus" name="homeStatus"></textarea>
+        </div>
+        <div>
+            <label for="otherContact">その他連絡:</label>
+            <textarea id="otherContact" name="otherContact"></textarea>
+        </div>
+        <button type="submit">送信</button>
+    </form>
+
+    <p id="statusMessage"></p>
+
+    <script src="script.js"></script>
+</body>
+</html>
