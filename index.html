@@ -4,7 +4,14 @@
     <title>安否確認</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        div { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], textarea, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #00b900; color: white; border: none; cursor: pointer; }
+        #statusMessage { margin-top: 15px; font-weight: bold; }
+    </style>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/sdk/2.2.0/liff.js"></script>
 </head>
 <body>
@@ -21,8 +28,7 @@
                 <option value="無事">無事</option>
                 <option value="軽傷">軽傷</option>
                 <option value="重傷">重傷</option>
-                <option value="要救助">要救助</option>
-                <option value="不明">不明</option>
+                <option value="その他">その他</option>
             </select>
         </div>
         <div>
@@ -30,24 +36,24 @@
             <select id="familySafety" name="familySafety" required>
                 <option value="">選択してください</option>
                 <option value="無事">無事</option>
-                <option value="安否不明">安否不明</option>
-                <option value="一緒に避難">一緒に避難</option>                
-                <option value="別行動">別行動</option>
+                <option value="軽傷">軽傷</option>
+                <option value="重傷">重傷</option>
                 <option value="その他">その他</option>
+                <option value="不明">不明</option>
+                <option value="別行動">別行動</option>
             </select>
         </div>
         <div>
             <label for="currentLocation">現在の場所:</label>
-            <input type="text" id="currentLocation" name="currentLocation" placeholder="例: 自宅、会社、〇〇小学校、〇〇市△△" required >
+            <input type="text" id="currentLocation" name="currentLocation">
         </div>
         <div>
             <label for="commutePossibility">出社の可否:</label>
             <select id="commutePossibility" name="commutePossibility">
                 <option value="">選択してください</option>
                 <option value="可能">可能</option>
-                <option value="自宅待機">自宅待機</option>
-                <option value="困難">困難</option>
-                <option value="その他">その他</option>
+                <option value="不可能">不可能</option>
+                <option value="未定">未定</option>
             </select>
         </div>
         <div>
@@ -63,6 +69,148 @@
 
     <p id="statusMessage"></p>
 
-    <script src="script.js"></script>
+    <script>
+        // JavaScriptコード（LIFF初期化、フォーム処理、google.script.run）
+        // LIFF IDはあなたのLIFF IDに置き換えてください
+        const MY_LIFF_ID = 'YOUR_LIFF_ID'; // ※注意：GAS_WEB_APP_URLは不要になります
+
+        let lineId = null;
+        let userDisplayName = '';
+        let latitude = null;
+        let longitude = null;
+
+        // LIFFの初期化
+        liff.init({
+            liffId: MY_LIFF_ID
+        })
+        .then(() => {
+            console.log('LIFF init success');
+            if (liff.isLoggedIn()) {
+                console.log('Logged in to LIFF');
+                // LINE IDと氏名を取得
+                liff.getProfile()
+                    .then(profile => {
+                        lineId = profile.userId;
+                        userDisplayName = profile.displayName;
+                        console.log('LINE ID:', lineId);
+                        console.log('Display Name:', userDisplayName);
+                        // 氏名フィールドに初期値を設定
+                        const nameInput = document.getElementById('name');
+                        if (nameInput && !nameInput.value) { // 入力済みの場合は上書きしない
+                            nameInput.value = userDisplayName;
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Error getting profile', err);
+                        document.getElementById('statusMessage').textContent = 'LINEプロフィールの取得に失敗しました。';
+                    });
+
+                // 位置情報を取得
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            latitude = position.coords.latitude;
+                            longitude = position.coords.longitude;
+                            console.log('Latitude:', latitude);
+                            console.log('Longitude:', longitude);
+                            // 緯度経度はユーザーには表示しないが、送信データに含める
+                        },
+                        (error) => {
+                            console.error('Error getting location', error);
+                            // 位置情報の取得に失敗してもフォーム送信は可能にする
+                            document.getElementById('statusMessage').textContent += ' 位置情報の取得に失敗しました。';
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        }
+                    );
+                } else {
+                    console.log('Geolocation is not supported by this browser.');
+                     document.getElementById('statusMessage').textContent += ' お使いのブラウザは位置情報に対応していません。';
+                }
+
+            } else {
+                console.log('Not logged in to LIFF. Redirecting to login...');
+                // Mini Appでは通常不要ですが、念のため
+                liff.login();
+            }
+        })
+        .catch((err) => {
+            console.error('LIFF init failed', err);
+            document.getElementById('statusMessage').textContent = 'LIFFの初期化に失敗しました。';
+        });
+
+        // google.script.run の成功ハンドラー
+        function onSuccess(result) {
+            console.log('GAS Response:', result);
+            const statusMessage = document.getElementById('statusMessage');
+            if (result.status === 'success') {
+                statusMessage.textContent = '安否情報を送信しました。';
+                // フォームをリセットすることも可能
+                // safetyForm.reset();
+                // LIFFウィンドウを閉じる
+                liff.closeWindow();
+            } else {
+                statusMessage.textContent = `送信に失敗しました: ${result.message}`;
+            }
+        }
+
+        // google.script.run の失敗ハンドラー
+        function onFailure(error) {
+             console.error('GAS Error:', error);
+             const statusMessage = document.getElementById('statusMessage');
+             statusMessage.textContent = `送信中にエラーが発生しました: ${error.message || error}`;
+        }
+
+
+        // フォーム送信時の処理
+        const safetyForm = document.getElementById('safetyForm');
+        if (safetyForm) {
+            safetyForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // デフォルトのフォーム送信を防止
+
+                const statusMessage = document.getElementById('statusMessage');
+                statusMessage.textContent = '送信中...';
+
+                // フォームデータの収集
+                const formData = new FormData(safetyForm);
+                const data = {};
+                formData.forEach((value, key) => {
+                    data[key] = value;
+                });
+
+                // プログラムで取得したデータの追加
+                if (lineId) {
+                    data.lineId = lineId;
+                } else {
+                    statusMessage.textContent = 'LINE IDが取得できませんでした。';
+                    return; // 送信中止
+                }
+
+                if (latitude !== null && longitude !== null) {
+                     data.latitudeLongitude = `<span class="math-inline">\{latitude\},</span>{longitude}`; // 緯度経度をまとめて送信
+                } else {
+                     data.latitudeLongitude = ''; // 位置情報が取得できなかった場合
+                }
+
+                // タイムスタンプはGAS側で生成するのでここでは含めない（GASコードによる）
+                // data.timestamp = new Date().toISOString();
+
+                console.log('Sending data to GAS backend:', data);
+
+                // google.script.run を使ってGAS関数を呼び出す
+                google.script.run
+                    .withSuccessHandler(onSuccess) // 成功時のコールバック
+                    .withFailureHandler(onFailure) // 失敗時のコールバック
+                    .recordSafetyData(data); // GASの recordSafetyData 関数を呼び出し、データを渡す
+
+            });
+        } else {
+            console.error('Form element not found.');
+        }
+
+    </script>
 </body>
 </html>
